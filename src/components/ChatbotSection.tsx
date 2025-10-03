@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Spline from '@splinetool/react-spline';
+import { lazy, Suspense } from 'react';
+const SplineLazy = lazy(() => import('@splinetool/react-spline'));
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -186,12 +187,34 @@ function extractCodeText(rawMarkdown: string, language: string, codeContent: str
 
 // Composant pour l'embed Spline
 const ChatbotAnimation: React.FC = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          io.disconnect();
+        }
+      });
+    }, { rootMargin: '200px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <div className="w-full h-full" style={{ pointerEvents: 'none' }}>
-      <Spline
-        scene="https://prod.spline.design/fxkQcgSmamcJ1nJr/scene.splinecode"
-        style={{ width: '100%', height: '100%' }}
-      />
+    <div ref={containerRef} className="w-full h-full" style={{ pointerEvents: 'none' }}>
+      {visible && (
+        <Suspense fallback={<div className="w-full h-full" />}> 
+          <SplineLazy
+            scene="https://prod.spline.design/fxkQcgSmamcJ1nJr/scene.splinecode"
+            style={{ width: '100%', height: '100%' }}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

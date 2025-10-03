@@ -13,6 +13,20 @@ if (process.env.TEMPO === "true") {
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/portfolio-2025-pages/',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router', 'react-router-dom'],
+          framer: ['framer-motion'],
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
+          spline: ['@splinetool/react-spline', '@splinetool/runtime'],
+          markdown: ['react-markdown', 'remark-gfm', 'rehype-highlight', 'highlight.js']
+        }
+      }
+    }
+  },
   optimizeDeps: {
     entries: ["src/main.tsx", "src/tempobook/**/*"],
   },
